@@ -1,3 +1,4 @@
+
 window.addEventListener('DOMContentLoaded', function() {
 
     'use strict';
@@ -34,9 +35,10 @@ window.addEventListener('DOMContentLoaded', function() {
         }
 
     });
-    // TIMER
 
-    let deadline = '2019-12-21';
+    // Timer 
+
+    let deadline = '2018-11-21';
 
     function getTimeRemaining(endtime) {
         let t = Date.parse(endtime) - Date.parse(new Date()),
@@ -45,7 +47,6 @@ window.addEventListener('DOMContentLoaded', function() {
         hours = Math.floor((t/(1000*60*60)));
 
         return {
-
             'total' : t,
             'hours' : hours,
             'minutes' : minutes,
@@ -57,25 +58,35 @@ window.addEventListener('DOMContentLoaded', function() {
         let timer = document.getElementById(id),
             hours = timer.querySelector('.hours'),
             minutes = timer.querySelector('.minutes'),
-            seconds = timer.querySelector('.seconds');
+            seconds = timer.querySelector('.seconds'),
             timeInterval = setInterval(updateClock, 1000);
-
+            
         function updateClock() {
-
             let t = getTimeRemaining(endtime);
-            hours.textContent = t.hours;
-            minutes.textContent = t.minutes;
-            seconds.textContent = t.seconds;
+
+            function addZero(num){
+                        if(num <= 9) {
+                            return '0' + num;
+                        } else return num;
+                    };
+
+            hours.textContent = addZero(t.hours);
+            minutes.textContent = addZero(t.minutes);
+            seconds.textContent = addZero(t.seconds);
 
             if (t.total <= 0) {
                 clearInterval(timeInterval);
+                hours.textContent = '00';
+                minutes.textContent = '00';
+                seconds.textContent = '00';
             }
         }
+
     }
 
     setClock('timer', deadline);
 
-    // modal
+    // Modal
 
     let more = document.querySelector('.more'),
         overlay = document.querySelector('.overlay'),
@@ -87,21 +98,21 @@ window.addEventListener('DOMContentLoaded', function() {
         document.body.style.overflow = 'hidden';
     });
 
-    close.addEventListener('click',function() {
+    close.addEventListener('click', function() {
         overlay.style.display = 'none';
         more.classList.remove('more-splash');
         document.body.style.overflow = '';
     });
 
-
-    //form
+     // Form
 
     let message = {
-        loading: 'загрузка...',
-        success: 'спасибо! скоро мы с вами свяжемся!',
-        failure: 'что то пошло не так...'
+        loading: 'Загрузка...',
+        success: 'Спасибо! Скоро мы с вами свяжемся!',
+        failure: 'Что-то пошло не так...'
     };
-    let form = document.querySelector('main-form'),
+
+    let form = document.querySelector('.main-form'),
         input = form.getElementsByTagName('input'),
         statusMessage = document.createElement('div');
 
@@ -113,29 +124,84 @@ window.addEventListener('DOMContentLoaded', function() {
 
         let request = new XMLHttpRequest();
         request.open('POST', 'server.php');
-        request.setRequestHeader ('content-type', 'application/json; charset=utf-8');
+        request.setRequestHeader('Content-type', 'application/json; charset=utf-8');
 
         let formData = new FormData(form);
 
         let obj = {};
         formData.forEach(function(value, key) {
-            obj [key] = value;   
+            obj[key] = value;
         });
         let json = JSON.stringify(obj);
 
         request.send(json);
 
-        request.addEventListener('readestatechange', function() {
+        request.addEventListener('readystatechange', function() {
             if (request.readyState < 4) {
                 statusMessage.innerHTML = message.loading;
-            }else if(request.readyState ===4 && request.status == 200) {
+            } else if(request.readyState === 4 && request.status == 200) {
                 statusMessage.innerHTML = message.success;
-            }else {
+            } else {
                 statusMessage.innerHTML = message.failure;
             }
         });
+
         for (let i = 0; i < input.length; i++) {
             input[i].value = '';
         }
     });
+
+    // Slider
+
+    let slideIndex = 1,
+        slides = document.querySelectorAll('.slider-item'),
+        prev = document.querySelector('.prev'),
+        next = document.querySelector('.next'),
+        dotsWrap = document.querySelector('.slider-dots'),
+        dots = document.querySelectorAll('.dot');
+
+    showSlides(slideIndex);
+
+    function showSlides(n) {
+
+        if (n > slides.length) {
+            slideIndex = 1;
+        }
+        if (n < 1) {
+            slideIndex = slides.length;
+        }
+
+        slides.forEach((item) => item.style.display = 'none');
+        // for (let i = 0; i < slides.length; i++) {
+        //     slides[i].style.display = 'none';
+        // }
+        dots.forEach((item) => item.classList.remove('dot-active'));
+
+        slides[slideIndex - 1].style.display = 'block';
+        dots[slideIndex - 1].classList.add('dot-active');
+    }
+
+    function plusSlides(n) {
+        showSlides(slideIndex += n); 
+    }
+    function currentSlide(n) {
+        showSlides(slideIndex = n);
+    }
+
+    prev.addEventListener('click', function() {
+        plusSlides(-1);
+    });
+
+    next.addEventListener('click', function() {
+        plusSlides(1);
+    });
+
+    dotsWrap.addEventListener('click', function(event) {
+        for (let i = 0; i < dots.length + 1; i++) {
+            if (event.target.classList.contains('dot') && event.target == dots[i-1]) {
+                currentSlide(i);
+            }
+        }
+    });
+
 });
